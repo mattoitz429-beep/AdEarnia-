@@ -89,10 +89,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "AdEarn — Watch Ads, Earn Rewards" },
       {
         property: "og:description",
-        content: "Complete a 2-ad bundle, earn instantly and cash out to your bank.",
+        content: "AdEarn pays you for every 2-ad bundle you complete, with progressive withdrawal tiers and manual payouts.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "AdEarn — Watch Ads, Earn Rewards" },
+      { name: "twitter:description", content: "AdEarn pays you for every 2-ad bundle you complete, with progressive withdrawal tiers and manual payouts." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/be0879e4-f674-46c4-ab69-1aad4c254877/id-preview-2556cf91--17eca9d0-4f86-4cc6-914a-ba70f8873ed2.lovable.app-1785937518297.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/be0879e4-f674-46c4-ab69-1aad4c254877/id-preview-2556cf91--17eca9d0-4f86-4cc6-914a-ba70f8873ed2.lovable.app-1785937518297.png" },
     ],
     links: [
       {
@@ -105,7 +109,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;600;700;800&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
 
