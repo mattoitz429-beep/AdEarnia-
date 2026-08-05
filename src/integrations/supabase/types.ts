@@ -14,13 +14,167 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ad_claims: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          account_name: string | null
+          account_number: string | null
+          balance: number
+          bank_name: string | null
+          completed_withdrawals: number
+          country: string
+          created_at: string
+          currency: string
+          email: string
+          full_name: string
+          id: string
+          last_claim_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_name?: string | null
+          account_number?: string | null
+          balance?: number
+          bank_name?: string | null
+          completed_withdrawals?: number
+          country?: string
+          created_at?: string
+          currency?: string
+          email?: string
+          full_name?: string
+          id: string
+          last_claim_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_name?: string | null
+          account_number?: string | null
+          balance?: number
+          bank_name?: string | null
+          completed_withdrawals?: number
+          country?: string
+          created_at?: string
+          currency?: string
+          email?: string
+          full_name?: string
+          id?: string
+          last_claim_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      withdrawals: {
+        Row: {
+          account_name: string | null
+          account_number: string | null
+          amount: number
+          bank_name: string | null
+          created_at: string
+          currency: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          account_name?: string | null
+          account_number?: string | null
+          amount: number
+          bank_name?: string | null
+          created_at?: string
+          currency: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          account_name?: string | null
+          account_number?: string | null
+          amount?: number
+          bank_name?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_ad_reward: {
+        Args: never
+        Returns: {
+          account_name: string | null
+          account_number: string | null
+          balance: number
+          bank_name: string | null
+          completed_withdrawals: number
+          country: string
+          created_at: string
+          currency: string
+          email: string
+          full_name: string
+          id: string
+          last_claim_at: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      min_cashout: {
+        Args: { _completed: number; _currency: string }
+        Returns: number
+      }
+      request_withdrawal: {
+        Args: { _amount: number }
+        Returns: {
+          account_name: string | null
+          account_number: string | null
+          amount: number
+          bank_name: string | null
+          created_at: string
+          currency: string
+          id: string
+          status: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "withdrawals"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never
