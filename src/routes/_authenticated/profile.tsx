@@ -1,12 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { BadgeCheck, LogOut, ShieldAlert } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { BadgeCheck, Loader2, LogOut, ShieldAlert, ShieldCheck, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile, useRefreshProfile } from "@/hooks/useProfile";
 import { COUNTRIES, asCurrency, currencyForCountry, formatMoney } from "@/lib/adearn";
+import { NIGERIAN_BANKS, bankCodeForName, isValidNuban } from "@/lib/nigerian-banks";
+import { resolveNubanAccount } from "@/lib/bank.functions";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
@@ -35,6 +38,7 @@ const bankSchema = z.object({
     .regex(/^[A-Za-z0-9@._-]+$/, "Only letters, numbers and @ . _ - are allowed"),
   account_name: z.string().trim().min(2, "Enter the account holder name").max(80),
 });
+
 
 function ProfileTab() {
   const { data: profile } = useProfile();
