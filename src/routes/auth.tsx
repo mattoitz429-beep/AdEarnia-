@@ -29,13 +29,14 @@ const schema = z.object({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [country, setCountry] = useState("NG");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   useEffect(() => {
     setCountry(detectCountryCode());
@@ -43,6 +44,29 @@ function AuthPage() {
       if (data.session) navigate({ to: "/" });
     });
   }, [navigate]);
+
+  async function sendReset(e: React.FormEvent) {
+    e.preventDefault();
+    const parsedEmail = z.string().trim().email().max(255).safeParse(email);
+    if (!parsedEmail.success) {
+      toast.error("Enter a valid email");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(parsedEmail.data, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setResetSent(true);
+      toast.success("Password reset link sent.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not send reset email");
+    } finally {
+      setLoading(false);
+    }
+  }
+
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();

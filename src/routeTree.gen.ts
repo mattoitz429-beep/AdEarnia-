@@ -13,6 +13,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -35,6 +36,11 @@ const CookiesRoute = CookiesRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/wallet': typeof AuthenticatedWalletRoute
@@ -71,6 +78,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/wallet': typeof AuthenticatedWalletRoute
@@ -82,6 +90,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/privacy': typeof PrivacyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/wallet': typeof AuthenticatedWalletRoute
@@ -90,16 +99,31 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/cookies' | '/privacy' | '/terms' | '/profile' | '/wallet'
+    | '/'
+    | '/auth'
+    | '/cookies'
+    | '/privacy'
+    | '/reset-password'
+    | '/terms'
+    | '/profile'
+    | '/wallet'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/auth' | '/cookies' | '/privacy' | '/terms' | '/profile' | '/wallet' | '/'
+    | '/auth'
+    | '/cookies'
+    | '/privacy'
+    | '/reset-password'
+    | '/terms'
+    | '/profile'
+    | '/wallet'
+    | '/'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
     | '/cookies'
     | '/privacy'
+    | '/reset-password'
     | '/terms'
     | '/_authenticated/profile'
     | '/_authenticated/wallet'
@@ -111,6 +135,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CookiesRoute: typeof CookiesRoute
   PrivacyRoute: typeof PrivacyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
 }
 
@@ -142,6 +167,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -195,6 +227,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CookiesRoute: CookiesRoute,
   PrivacyRoute: PrivacyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
 }
 export const routeTree = rootRouteImport
