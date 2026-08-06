@@ -11,12 +11,12 @@ import { COUNTRIES, asCurrency, currencyForCountry, formatMoney } from "@/lib/ad
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
     meta: [
-      { title: "Profile — AdEarn Account & Bank Details" },
+      { title: "Profile — AdEarnia Account & Bank Details" },
       {
         name: "description",
-        content: "Manage your AdEarn account, verification status and payout bank details.",
+        content: "Manage your AdEarnia account, verification status and payout bank details.",
       },
-      { property: "og:title", content: "Profile — AdEarn Account & Bank Details" },
+      { property: "og:title", content: "Profile — AdEarnia Account & Bank Details" },
       { property: "og:description", content: "Update your payout account and review policies." },
     ],
   }),
@@ -109,7 +109,7 @@ function ProfileTab() {
           <span className="rounded-full border border-gold/40 bg-gold/10 px-2.5 py-1 text-gold">
             {currency} · {formatMoney(Number(profile?.balance ?? 0), currency)}
           </span>
-          <span className="rounded-full border border-border bg-secondary px-2.5 py-1 text-muted-foreground">
+          <span className="rounded-full border border-white/10 bg-white/5 backdrop-blur-md px-2.5 py-1 text-muted-foreground">
             {profile?.completed_withdrawals ?? 0} payouts completed
           </span>
         </div>
@@ -127,7 +127,7 @@ function ProfileTab() {
           <select
             value={form.country}
             onChange={(e) => setForm({ ...form, country: e.target.value })}
-            className="mt-1 w-full rounded-xl border border-border bg-input px-4 py-3 text-sm font-semibold outline-none focus:border-gold"
+            className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition-colors px-4 py-3 text-sm font-semibold outline-none focus:border-gold"
           >
             {COUNTRIES.map((c) => (
               <option key={c.code} value={c.code}>
@@ -182,7 +182,7 @@ function ProfileTab() {
           await supabase.auth.signOut();
           navigate({ to: "/auth" });
         }}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-secondary px-4 py-3.5 text-sm font-bold text-muted-foreground"
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md px-4 py-3.5 text-sm font-bold text-muted-foreground"
       >
         <LogOut className="h-4 w-4" /> Sign out
       </button>
@@ -205,7 +205,7 @@ function Field({
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full rounded-xl border border-border bg-input px-4 py-3 text-sm font-semibold outline-none focus:border-gold"
+        className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition-colors px-4 py-3 text-sm font-semibold outline-none focus:border-gold"
       />
     </label>
   );

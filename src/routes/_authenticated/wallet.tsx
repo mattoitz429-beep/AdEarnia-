@@ -10,12 +10,12 @@ import { asCurrency, formatMoney, minCashout } from "@/lib/adearn";
 export const Route = createFileRoute("/_authenticated/wallet")({
   head: () => ({
     meta: [
-      { title: "Wallet — AdEarn Payouts" },
+      { title: "Wallet — AdEarnia Payouts" },
       {
         name: "description",
-        content: "Check your AdEarn balance, current cashout tier and payout request history.",
+        content: "Check your AdEarnia balance, current cashout tier and payout request history.",
       },
-      { property: "og:title", content: "Wallet — AdEarn Payouts" },
+      { property: "og:title", content: "Wallet — AdEarnia Payouts" },
       { property: "og:description", content: "Request payouts and track their status." },
     ],
   }),
@@ -80,7 +80,7 @@ function WalletTab() {
         <p className="mt-1 font-display text-4xl font-extrabold text-gold tabular-nums">
           {formatMoney(balance, currency)}
         </p>
-        <p className="mt-3 rounded-lg bg-secondary px-3 py-2 text-xs text-muted-foreground">
+        <p className="mt-3 rounded-lg border border-white/10 bg-white/5 backdrop-blur-md px-3 py-2 text-xs text-muted-foreground">
           Tier {(profile?.completed_withdrawals ?? 0) + 1} · Current minimum cashout:{" "}
           <span className="font-bold text-foreground">{formatMoney(minimum, currency)}</span>
         </p>
@@ -98,10 +98,10 @@ function WalletTab() {
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder={String(minimum)}
-          className="mt-1 w-full rounded-xl border border-border bg-input px-4 py-3 text-sm font-semibold outline-none focus:border-gold"
+          className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition-colors px-4 py-3 text-sm font-semibold outline-none focus:border-gold"
         />
 
-        <div className="mt-4 rounded-xl border border-border bg-secondary p-3 text-sm">
+        <div className="mt-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md p-3 text-sm">
           <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
             <Banknote className="h-4 w-4 text-gold" /> Payout account
           </div>
@@ -129,7 +129,7 @@ function WalletTab() {
           className={`mt-4 w-full rounded-xl px-4 py-3.5 text-sm font-extrabold transition ${
             canRequest
               ? "gold-gradient text-gold-foreground shadow-gold"
-              : "cursor-not-allowed bg-muted text-muted-foreground"
+              : "cursor-not-allowed border border-white/10 bg-white/5 text-muted-foreground backdrop-blur-md"
           }`}
         >
           {request.isPending ? "Submitting..." : "Request Payout"}

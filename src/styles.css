@@ -118,6 +118,13 @@
 
   body {
     background-color: var(--color-background);
+    background-image:
+      radial-gradient(60rem 40rem at 15% -10%, oklch(0.852 0.18 96 / 0.14), transparent 60%),
+      radial-gradient(50rem 38rem at 110% 10%, oklch(0.6 0.15 250 / 0.18), transparent 60%),
+      radial-gradient(60rem 45rem at 50% 115%, oklch(0.72 0.16 162 / 0.12), transparent 65%),
+      linear-gradient(170deg, oklch(0.19 0.04 265), oklch(0.15 0.035 268));
+    background-attachment: fixed;
+    background-repeat: no-repeat;
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-tap-highlight-color: transparent;
@@ -131,11 +138,27 @@
   }
 }
 
+/* Frosted glass container */
 @utility card-surface {
-  background-color: var(--card);
-  border: 1px solid var(--border);
+  background-color: oklch(1 0 0 / 0.06);
+  background-image: linear-gradient(
+    145deg,
+    oklch(1 0 0 / 0.07),
+    oklch(1 0 0 / 0.02)
+  );
+  border: 1px solid oklch(1 0 0 / 0.1);
   border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-card);
+  box-shadow:
+    0 24px 48px -28px oklch(0 0 0 / 0.9),
+    inset 0 1px 0 0 oklch(1 0 0 / 0.08);
+  backdrop-filter: blur(16px) saturate(150%);
+}
+
+/* Frosted glass bar for navigation surfaces */
+@utility glass-bar {
+  background-color: oklch(0.19 0.04 265 / 0.6);
+  border-color: oklch(1 0 0 / 0.1);
+  backdrop-filter: blur(18px) saturate(160%);
 }
 
 @utility gold-gradient {
