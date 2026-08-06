@@ -103,15 +103,14 @@ function ProfileTab() {
     queryFn: () => resolve({ data: { bankCode, accountNumber: form.account_number.trim() } }),
   });
 
+  const resolved = verification.data?.ok ? verification.data.accountName : null;
+
   useEffect(() => {
-    if (isNG && verification.data?.ok) {
-      setForm((f) =>
-        f.account_name === verification.data.accountName
-          ? f
-          : { ...f, account_name: verification.data.accountName },
-      );
+    if (isNG && resolved) {
+      setForm((f) => (f.account_name === resolved ? f : { ...f, account_name: resolved }));
     }
-  }, [isNG, verification.data]);
+  }, [isNG, resolved]);
+
 
   const verifyError =
     isNG && form.account_number.trim().length > 0 && !nubanOk
