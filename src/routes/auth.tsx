@@ -102,7 +102,7 @@ function AuthPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
+    <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex items-center gap-2">
           <span className="grid h-10 w-10 place-items-center rounded-xl gold-gradient text-gold-foreground">
@@ -133,7 +133,7 @@ function AuthPage() {
                     <select
                       value={country}
                       onChange={(e) => setCountry(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-border bg-input px-4 py-3 text-sm font-semibold outline-none focus:border-gold"
+                      className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition-colors px-4 py-3 text-sm font-semibold outline-none focus:border-gold"
                     >
                       {COUNTRIES.map((c) => (
                         <option key={c.code} value={c.code}>
@@ -159,7 +159,7 @@ function AuthPage() {
           <button
             type="button"
             onClick={google}
-            className="mt-3 w-full rounded-xl border border-border bg-secondary px-4 py-3.5 text-sm font-bold"
+            className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-md px-4 py-3.5 text-sm font-bold"
           >
             Continue with Google
           </button>
@@ -206,7 +206,7 @@ function Input({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full rounded-xl border border-border bg-input px-4 py-3 text-sm font-semibold outline-none focus:border-gold"
+        className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition-colors px-4 py-3 text-sm font-semibold outline-none focus:border-gold"
       />
     </label>
   );

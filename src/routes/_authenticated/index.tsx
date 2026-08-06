@@ -125,7 +125,7 @@ function HomeTab() {
           onClick={() => claim.mutate()}
           className={`mt-5 w-full rounded-xl px-4 py-3.5 text-sm font-extrabold transition ${
             claimDisabled
-              ? "cursor-not-allowed bg-muted text-muted-foreground"
+              ? "cursor-not-allowed border border-white/10 bg-white/5 text-muted-foreground backdrop-blur-md"
               : "animate-pulse bg-success text-success-foreground shadow-gold"
           }`}
         >
@@ -152,7 +152,7 @@ function HomeTab() {
             {formatMoney(goal, currency)}
           </span>
         </div>
-        <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-muted">
+        <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full border border-white/10 bg-white/5 backdrop-blur-md">
           <div className="h-full rounded-full gold-gradient" style={{ width: `${progress}%` }} />
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
@@ -180,7 +180,7 @@ function StepButton({
       className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3.5 text-left text-sm font-semibold transition ${
         done
           ? "border-success/40 bg-success/10 text-success"
-          : "border-border bg-secondary text-secondary-foreground hover:border-gold/50"
+          : "border-white/10 bg-white/5 text-foreground backdrop-blur-md hover:border-gold/50"
       }`}
     >
       {done ? (
