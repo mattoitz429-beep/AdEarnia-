@@ -29,13 +29,14 @@ const schema = z.object({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [country, setCountry] = useState("NG");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   useEffect(() => {
     setCountry(detectCountryCode());
@@ -43,6 +44,29 @@ function AuthPage() {
       if (data.session) navigate({ to: "/" });
     });
   }, [navigate]);
+
+  async function sendReset(e: React.FormEvent) {
+    e.preventDefault();
+    const parsedEmail = z.string().trim().email().max(255).safeParse(email);
+    if (!parsedEmail.success) {
+      toast.error("Enter a valid email");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(parsedEmail.data, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setResetSent(true);
+      toast.success("Password reset link sent.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not send reset email");
+    } finally {
+      setLoading(false);
+    }
+  }
+
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -113,13 +137,36 @@ function AuthPage() {
 
         <div className="card-surface p-5">
           <h2 className="text-lg font-bold">
-            {mode === "signin" ? "Welcome back" : "Create your account"}
+            {mode === "signin"
+              ? "Welcome back"
+              : mode === "signup"
+                ? "Create your account"
+                : "Reset your password"}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Watch a 2-ad bundle, earn instantly, cash out to your bank.
+            {mode === "forgot"
+              ? "Enter your email and we'll send you a reset link."
+              : "Watch a 2-ad bundle, earn instantly, cash out to your bank."}
           </p>
 
-          {sent ? (
+          {mode === "forgot" ? (
+            resetSent ? (
+              <p className="mt-5 rounded-xl border border-gold/40 bg-gold/10 p-4 text-sm text-gold">
+                We sent a password reset link to {email}. Open it to choose a new password.
+              </p>
+            ) : (
+              <form onSubmit={sendReset} className="mt-5 space-y-3">
+                <Input label="Email" type="email" value={email} onChange={setEmail} />
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full rounded-xl gold-gradient px-4 py-3.5 text-sm font-extrabold text-gold-foreground shadow-gold disabled:opacity-60"
+                >
+                  {loading ? "Sending..." : "Send reset link"}
+                </button>
+              </form>
+            )
+          ) : sent ? (
             <p className="mt-5 rounded-xl border border-gold/40 bg-gold/10 p-4 text-sm text-gold">
               We sent a confirmation link to {email}. Confirm it, then sign in.
             </p>
@@ -146,6 +193,18 @@ function AuthPage() {
               )}
               <Input label="Email" type="email" value={email} onChange={setEmail} />
               <Input label="Password" type="password" value={password} onChange={setPassword} />
+              {mode === "signin" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("forgot");
+                    setResetSent(false);
+                  }}
+                  className="w-full text-right text-xs font-bold text-gold underline-offset-4 hover:underline"
+                >
+                  Forgot password?
+                </button>
+              )}
               <button
                 type="submit"
                 disabled={loading}
@@ -156,19 +215,22 @@ function AuthPage() {
             </form>
           )}
 
-          <button
-            type="button"
-            onClick={google}
-            className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-md px-4 py-3.5 text-sm font-bold"
-          >
-            Continue with Google
-          </button>
+          {mode !== "forgot" && (
+            <button
+              type="button"
+              onClick={google}
+              className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-md px-4 py-3.5 text-sm font-bold"
+            >
+              Continue with Google
+            </button>
+          )}
 
           <button
             type="button"
             onClick={() => {
               setMode(mode === "signin" ? "signup" : "signin");
               setSent(false);
+              setResetSent(false);
             }}
             className="mt-4 w-full text-center text-sm text-muted-foreground"
           >
@@ -183,6 +245,7 @@ function AuthPage() {
             )}
           </button>
         </div>
+
       </div>
     </div>
   );
