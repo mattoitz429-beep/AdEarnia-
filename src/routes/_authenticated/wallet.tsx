@@ -10,12 +10,12 @@ import { asCurrency, formatMoney, minCashout } from "@/lib/adearn";
 export const Route = createFileRoute("/_authenticated/wallet")({
   head: () => ({
     meta: [
-      { title: "Wallet — AdEarn Payouts" },
+      { title: "Wallet — AdEarnia Payouts" },
       {
         name: "description",
-        content: "Check your AdEarn balance, current cashout tier and payout request history.",
+        content: "Check your AdEarnia balance, current cashout tier and payout request history.",
       },
-      { property: "og:title", content: "Wallet — AdEarn Payouts" },
+      { property: "og:title", content: "Wallet — AdEarnia Payouts" },
       { property: "og:description", content: "Request payouts and track their status." },
     ],
   }),

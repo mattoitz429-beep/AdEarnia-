@@ -3,13 +3,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Terms of Service & Anti-Fraud Policy — AdEarn" },
+      { title: "Terms of Service & Anti-Fraud Policy — AdEarnia" },
       {
         name: "description",
         content:
-          "AdEarn terms of service, earning rules and the anti-fraud policy covering bots, VPNs and multiple accounts.",
+          "AdEarnia terms of service, earning rules and the anti-fraud policy covering bots, VPNs and multiple accounts.",
       },
-      { property: "og:title", content: "Terms of Service & Anti-Fraud Policy — AdEarn" },
+      { property: "og:title", content: "Terms of Service & Anti-Fraud Policy — AdEarnia" },
       { property: "og:description", content: "Earning rules, payout terms and fraud policy." },
     ],
   }),
@@ -20,7 +20,7 @@ function Terms() {
   return (
     <LegalPage title="Terms of Service & Anti-Fraud Policy">
       <p>
-        By using AdEarn you agree to complete ad tasks honestly. Each reward requires completing a
+        By using AdEarnia you agree to complete ad tasks honestly. Each reward requires completing a
         full 2-ad bundle (one Monetag ad and one Adsterra ad) with a cooldown between claims.
       </p>
       <h2>Anti-fraud policy</h2>
@@ -44,7 +44,7 @@ export function LegalPage({ title, children }: { title: string; children: React.
   return (
     <div className="mx-auto max-w-lg px-4 py-10">
       <Link to="/" className="text-sm font-bold text-gold">
-        ← Back to AdEarn
+        ← Back to AdEarnia
       </Link>
       <h1 className="mt-4 text-2xl font-extrabold">{title}</h1>
       <div className="mt-4 space-y-4 text-sm leading-relaxed text-muted-foreground [&_h2]:pt-2 [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-foreground [&_li]:ml-4 [&_li]:list-disc [&_ul]:space-y-1">

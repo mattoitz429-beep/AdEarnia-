@@ -9,12 +9,12 @@ import { COUNTRIES, currencyForCountry, detectCountryCode } from "@/lib/adearn";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in to AdEarn — Earn by Watching Ads" },
+      { title: "Sign in to AdEarnia — Earn by Watching Ads" },
       {
         name: "description",
-        content: "Create your AdEarn account to start earning per 2-ad bundle and cash out.",
+        content: "Create your AdEarnia account to start earning per 2-ad bundle and cash out.",
       },
-      { property: "og:title", content: "Sign in to AdEarn" },
+      { property: "og:title", content: "Sign in to AdEarnia" },
       { property: "og:description", content: "Earn rewards for every 2-ad bundle you complete." },
     ],
   }),
@@ -108,7 +108,7 @@ function AuthPage() {
           <span className="grid h-10 w-10 place-items-center rounded-xl gold-gradient text-gold-foreground">
             <Coins className="h-5 w-5" />
           </span>
-          <h1 className="font-display text-2xl font-extrabold">AdEarn</h1>
+          <h1 className="font-display text-2xl font-extrabold">AdEarnia</h1>
         </div>
 
         <div className="card-surface p-5">

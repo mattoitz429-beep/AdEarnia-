@@ -18,13 +18,13 @@ import {
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "AdEarn — Watch 2 Ads, Earn Instantly" },
+      { title: "AdEarnia — Watch 2 Ads, Earn Instantly" },
       {
         name: "description",
         content:
           "Complete a 2-ad bundle to earn rewards instantly and cash out through progressive withdrawal tiers.",
       },
-      { property: "og:title", content: "AdEarn — Watch 2 Ads, Earn Instantly" },
+      { property: "og:title", content: "AdEarnia — Watch 2 Ads, Earn Instantly" },
       {
         property: "og:description",
         content: "Earn per 2-ad bundle and request payouts to your bank account.",

@@ -11,12 +11,12 @@ import { COUNTRIES, asCurrency, currencyForCountry, formatMoney } from "@/lib/ad
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
     meta: [
-      { title: "Profile — AdEarn Account & Bank Details" },
+      { title: "Profile — AdEarnia Account & Bank Details" },
       {
         name: "description",
-        content: "Manage your AdEarn account, verification status and payout bank details.",
+        content: "Manage your AdEarnia account, verification status and payout bank details.",
       },
-      { property: "og:title", content: "Profile — AdEarn Account & Bank Details" },
+      { property: "og:title", content: "Profile — AdEarnia Account & Bank Details" },
       { property: "og:description", content: "Update your payout account and review policies." },
     ],
   }),
