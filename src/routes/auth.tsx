@@ -90,18 +90,6 @@ function AuthPage() {
     }
   }
 
-  async function google() {
-    const { lovable } = await import("@/integrations/lovable/index");
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      toast.error("Google sign-in failed");
-      return;
-    }
-    if (result.redirected) return;
-    navigate({ to: "/" });
-  }
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-10">
@@ -158,13 +146,6 @@ function AuthPage() {
             </form>
           )}
 
-          <button
-            type="button"
-            onClick={google}
-            className="mt-3 w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-md px-4 py-3.5 text-sm font-bold"
-          >
-            Continue with Google
-          </button>
 
           <button
             type="button"
