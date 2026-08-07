@@ -39,6 +39,21 @@ const bankSchema = z.object({
   account_name: z.string().trim().min(2, "Enter the account holder name").max(80),
 });
 
+const INTERNATIONAL_PAYOUT_METHODS: string[] = [
+  "PayPal",
+  "Wise",
+  "Payoneer",
+  "Revolut",
+  "Chase Bank",
+  "Bank of America",
+  "Wells Fargo",
+  "Barclays",
+  "HSBC",
+  "Deutsche Bank",
+  "BNP Paribas",
+  "Crypto (USDT TRC-20)",
+];
+
 
 function ProfileTab() {
   const { data: profile } = useProfile();
