@@ -275,11 +275,34 @@ function ProfileTab() {
           </>
         ) : (
           <>
-            <Field
-              label="Bank name / payout method"
-              value={form.bank_name}
-              onChange={(v) => setForm({ ...form, bank_name: v })}
-            />
+            <div>
+              <span className="text-xs font-semibold text-muted-foreground">
+                Financial institution / payout method
+              </span>
+              <select
+                value={
+                  INTERNATIONAL_PAYOUT_METHODS.includes(form.bank_name) ? form.bank_name : "OTHER"
+                }
+                onChange={(e) =>
+                  setForm({ ...form, bank_name: e.target.value === "OTHER" ? "" : e.target.value })
+                }
+                className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition-colors px-4 py-3 text-sm font-semibold outline-none focus:border-gold"
+              >
+                <option value="OTHER">Select or enter your own</option>
+                {INTERNATIONAL_PAYOUT_METHODS.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {!INTERNATIONAL_PAYOUT_METHODS.includes(form.bank_name) && (
+              <Field
+                label="Bank / provider name"
+                value={form.bank_name}
+                onChange={(v) => setForm({ ...form, bank_name: v })}
+              />
+            )}
             <Field
               label="Account number / PayPal / wallet"
               value={form.account_number}
@@ -291,6 +314,7 @@ function ProfileTab() {
               onChange={(v) => setForm({ ...form, account_name: v })}
             />
           </>
+
         )}
         <button
           type="button"
