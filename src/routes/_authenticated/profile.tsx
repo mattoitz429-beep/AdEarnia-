@@ -39,6 +39,21 @@ const bankSchema = z.object({
   account_name: z.string().trim().min(2, "Enter the account holder name").max(80),
 });
 
+const INTERNATIONAL_PAYOUT_METHODS: string[] = [
+  "PayPal",
+  "Wise",
+  "Payoneer",
+  "Revolut",
+  "Chase Bank",
+  "Bank of America",
+  "Wells Fargo",
+  "Barclays",
+  "HSBC",
+  "Deutsche Bank",
+  "BNP Paribas",
+  "Crypto (USDT TRC-20)",
+];
+
 
 function ProfileTab() {
   const { data: profile } = useProfile();
@@ -123,6 +138,9 @@ function ProfileTab() {
 
   const blockedNG = isNG && (!bankCode || !nubanOk || !verification.data?.ok);
 
+  const linked = Boolean(profile?.bank_name && profile?.account_number && profile?.account_name);
+  const linkedVerified =
+    linked && (profile?.country !== "NG" || Boolean(bankCodeForName(profile?.bank_name ?? "")));
 
   return (
     <div className="space-y-5">
@@ -154,7 +172,32 @@ function ProfileTab() {
       </section>
 
       <section className="card-surface space-y-3 p-5">
-        <h2 className="text-base font-bold">Payout details</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-base font-bold">Bank & payout details</h2>
+          <span
+            className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold ${
+              linked && linkedVerified
+                ? "border-success/40 bg-success/10 text-success"
+                : linked
+                  ? "border-warning/40 bg-warning/10 text-warning"
+                  : "border-white/10 bg-white/5 text-muted-foreground backdrop-blur-md"
+            }`}
+          >
+            {linked && linkedVerified ? (
+              <ShieldCheck className="h-3.5 w-3.5" />
+            ) : linked ? (
+              <ShieldAlert className="h-3.5 w-3.5" />
+            ) : (
+              <XCircle className="h-3.5 w-3.5" />
+            )}
+            {linked && linkedVerified
+              ? "Bank Linked Successfully"
+              : linked
+                ? "Pending Verification"
+                : "No payout method linked"}
+          </span>
+        </div>
+
         <Field
           label="Full name"
           value={form.full_name}
@@ -247,11 +290,34 @@ function ProfileTab() {
           </>
         ) : (
           <>
-            <Field
-              label="Bank name / payout method"
-              value={form.bank_name}
-              onChange={(v) => setForm({ ...form, bank_name: v })}
-            />
+            <div>
+              <span className="text-xs font-semibold text-muted-foreground">
+                Financial institution / payout method
+              </span>
+              <select
+                value={
+                  INTERNATIONAL_PAYOUT_METHODS.includes(form.bank_name) ? form.bank_name : "OTHER"
+                }
+                onChange={(e) =>
+                  setForm({ ...form, bank_name: e.target.value === "OTHER" ? "" : e.target.value })
+                }
+                className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition-colors px-4 py-3 text-sm font-semibold outline-none focus:border-gold"
+              >
+                <option value="OTHER">Select or enter your own</option>
+                {INTERNATIONAL_PAYOUT_METHODS.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {!INTERNATIONAL_PAYOUT_METHODS.includes(form.bank_name) && (
+              <Field
+                label="Bank / provider name"
+                value={form.bank_name}
+                onChange={(v) => setForm({ ...form, bank_name: v })}
+              />
+            )}
             <Field
               label="Account number / PayPal / wallet"
               value={form.account_number}
@@ -263,6 +329,7 @@ function ProfileTab() {
               onChange={(v) => setForm({ ...form, account_name: v })}
             />
           </>
+
         )}
         <button
           type="button"

@@ -1,34 +1,29 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { CheckCircle2, PlayCircle, Sparkles, Target } from "lucide-react";
+import { CheckCircle2, Sparkles, Target, Unlock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile, useRefreshProfile } from "@/hooks/useProfile";
-import {
-  ADSTERRA_URL,
-  COOLDOWN_SECONDS,
-  MONETAG_URL,
-  REWARD_RATES,
-  asCurrency,
-  formatMoney,
-  minCashout,
-} from "@/lib/adearn";
+import { COOLDOWN_SECONDS, REWARD_RATES, asCurrency, formatMoney, minCashout } from "@/lib/adearn";
+import { loadCpaGrip, openCpaGripLocker } from "@/lib/cpagrip";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "AdEarnia — Watch 2 Ads, Earn Instantly" },
+      { title: "AdEarnia — Unlock Daily Tasks, Earn Instantly" },
       {
         name: "description",
         content:
-          "Complete a 2-ad bundle to earn rewards instantly and cash out through progressive withdrawal tiers.",
+          "Complete a 2-task bundle to earn rewards instantly and cash out through progressive withdrawal tiers.",
       },
-      { property: "og:title", content: "AdEarnia — Watch 2 Ads, Earn Instantly" },
+      { property: "og:title", content: "AdEarnia — Unlock Daily Tasks, Earn Instantly" },
       {
         property: "og:description",
-        content: "Earn per 2-ad bundle and request payouts to your bank account.",
+        content: "Earn per task bundle and request payouts to your linked bank account.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: HomeTab,
@@ -42,7 +37,12 @@ function HomeTab() {
   const [cooldown, setCooldown] = useState(0);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => () => { if (timer.current) clearInterval(timer.current); }, []);
+  useEffect(() => {
+    void loadCpaGrip().catch(() => undefined);
+    return () => {
+      if (timer.current) clearInterval(timer.current);
+    };
+  }, []);
 
   const currency = asCurrency(profile?.currency);
   const reward = REWARD_RATES[currency];
@@ -56,7 +56,7 @@ function HomeTab() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success(`${formatMoney(reward, currency)} added to your balance!`);
+      toast.success(`${formatMoney(reward, currency)} added to your wallet!`);
       setStep1(false);
       setStep2(false);
       refresh();
@@ -79,6 +79,19 @@ function HomeTab() {
     }, 1000);
   }
 
+  async function unlock(markDone: () => void) {
+    try {
+      const opened = await openCpaGripLocker();
+      if (!opened) {
+        toast.error("Tasks are still loading. Please try again in a moment.");
+        return;
+      }
+      markDone();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not open tasks");
+    }
+  }
+
   const bundleReady = step1Done && step2Done;
   const claimDisabled = !bundleReady || cooldown > 0 || claim.isPending;
 
@@ -90,7 +103,7 @@ function HomeTab() {
           {profile?.full_name?.trim() || profile?.email?.split("@")[0] || "Earner"}!
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Watch both ads in the bundle to bank {formatMoney(reward, currency)}.
+          Complete both daily tasks to bank {formatMoney(reward, currency)}.
         </p>
       </section>
 
@@ -103,19 +116,13 @@ function HomeTab() {
         <div className="mt-4 space-y-3">
           <StepButton
             done={step1Done}
-            label="1. Watch Ad #1 (Monetag)"
-            onClick={() => {
-              window.open(MONETAG_URL, "_blank", "noopener,noreferrer");
-              setStep1(true);
-            }}
+            label="1. Unlock Task #1"
+            onClick={() => void unlock(() => setStep1(true))}
           />
           <StepButton
             done={step2Done}
-            label="2. Watch Ad #2 (Adsterra)"
-            onClick={() => {
-              window.open(ADSTERRA_URL, "_blank", "noopener,noreferrer");
-              setStep2(true);
-            }}
+            label="2. Unlock Task #2"
+            onClick={() => void unlock(() => setStep2(true))}
           />
         </div>
 
@@ -137,7 +144,7 @@ function HomeTab() {
         </button>
         {!bundleReady && cooldown === 0 && (
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            Both steps must be completed before claiming.
+            Both tasks must be completed before claiming.
           </p>
         )}
       </section>
@@ -186,7 +193,7 @@ function StepButton({
       {done ? (
         <CheckCircle2 className="h-5 w-5 shrink-0" />
       ) : (
-        <PlayCircle className="h-5 w-5 shrink-0 text-gold" />
+        <Unlock className="h-5 w-5 shrink-0 text-gold" />
       )}
       <span className="min-w-0 truncate">{done ? `${label} — Completed` : label}</span>
     </button>
