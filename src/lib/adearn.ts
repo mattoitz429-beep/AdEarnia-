@@ -1,5 +1,3 @@
-export const MONETAG_URL = "https://your-monetag-smartlink.com";
-export const ADSTERRA_URL = "https://your-adsterra-directlink.com";
 
 export const COOLDOWN_SECONDS = 15;
 
