@@ -20,15 +20,15 @@ function Terms() {
   return (
     <LegalPage title="Terms of Service & Anti-Fraud Policy">
       <p>
-        By using AdEarnia you agree to complete ad tasks honestly. Each reward requires completing a
-        full 2-ad bundle (one Monetag ad and one Adsterra ad) with a cooldown between claims.
+        By using AdEarnia you agree to complete tasks honestly. Each reward requires completing a
+        full 2-task bundle through our task partner with a cooldown between claims.
       </p>
       <h2>Anti-fraud policy</h2>
       <ul>
         <li>One account per person and per device. Multiple accounts forfeit all balances.</li>
         <li>Bots, auto-clickers, scripts, emulators and click farms are strictly prohibited.</li>
         <li>Masking your real location with VPNs or proxies to change your currency is prohibited.</li>
-        <li>Invalid ad traffic reported by our ad partners voids the related rewards.</li>
+        <li>Invalid traffic reported by our task partners voids the related rewards.</li>
       </ul>
       <h2>Payouts</h2>
       <p>

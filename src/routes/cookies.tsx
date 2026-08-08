@@ -23,9 +23,9 @@ function Cookies() {
         AdEarnia uses strictly necessary cookies and browser local storage to keep you signed in and
         to remember your session between visits.
       </p>
-      <h2>Ad network cookies</h2>
+      <h2>Task partner cookies</h2>
       <p>
-        When you open a Monetag or Adsterra link, those networks may set their own cookies to
+        When you open a partner task link, those networks may set their own cookies to
         measure impressions and prevent fraud. Those cookies are governed by their policies.
       </p>
       <h2>Managing cookies</h2>
