@@ -79,17 +79,9 @@ function HomeTab() {
     }, 1000);
   }
 
-  async function unlock(markDone: () => void) {
-    try {
-      const opened = await openCpaGripLocker();
-      if (!opened) {
-        toast.error("Tasks are still loading. Please try again in a moment.");
-        return;
-      }
-      markDone();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not open tasks");
-    }
+  function unlock(markDone: () => void) {
+    openCpaGripLocker();
+    markDone();
   }
 
   const bundleReady = step1Done && step2Done;
@@ -117,12 +109,12 @@ function HomeTab() {
           <StepButton
             done={step1Done}
             label="1. Unlock Task #1"
-            onClick={() => void unlock(() => setStep1(true))}
+            onClick={() => unlock(() => setStep1(true))}
           />
           <StepButton
             done={step2Done}
             label="2. Unlock Task #2"
-            onClick={() => void unlock(() => setStep2(true))}
+            onClick={() => unlock(() => setStep2(true))}
           />
         </div>
 

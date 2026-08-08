@@ -33,12 +33,26 @@ export function loadCpaGrip(): Promise<void> {
   return loading;
 }
 
-/** Opens the CPAGrip content locker. Resolves true when the locker was shown. */
-export async function openCpaGripLocker(): Promise<boolean> {
-  await loadCpaGrip();
+/**
+ * Opens the CPAGrip content locker immediately, never blocking the user.
+ * If the script has not finished loading, it opens the locker URL in a new tab
+ * and keeps loading the script in the background.
+ */
+export function openCpaGripLocker(): boolean {
+  if (typeof window === "undefined") return false;
+
+  // Keep the script loading in the background; never await it.
+  void loadCpaGrip().catch(() => undefined);
+
   if (typeof window.call_locker === "function") {
-    window.call_locker();
-    return true;
+    try {
+      window.call_locker();
+      return true;
+    } catch {
+      /* fall through to direct open */
+    }
   }
-  return false;
+
+  window.open(CPAGRIP_SCRIPT_URL, "_blank", "noopener,noreferrer");
+  return true;
 }
