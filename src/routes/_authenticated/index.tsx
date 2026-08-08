@@ -79,17 +79,9 @@ function HomeTab() {
     }, 1000);
   }
 
-  async function unlock(markDone: () => void) {
-    try {
-      const opened = await openCpaGripLocker();
-      if (!opened) {
-        toast.error("Tasks are still loading. Please try again in a moment.");
-        return;
-      }
-      markDone();
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not open tasks");
-    }
+  function unlock(markDone: () => void) {
+    openCpaGripLocker();
+    markDone();
   }
 
   const bundleReady = step1Done && step2Done;
