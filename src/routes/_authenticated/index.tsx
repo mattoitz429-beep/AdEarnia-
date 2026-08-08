@@ -109,12 +109,12 @@ function HomeTab() {
           <StepButton
             done={step1Done}
             label="1. Unlock Task #1"
-            onClick={() => void unlock(() => setStep1(true))}
+            onClick={() => unlock(() => setStep1(true))}
           />
           <StepButton
             done={step2Done}
             label="2. Unlock Task #2"
-            onClick={() => void unlock(() => setStep2(true))}
+            onClick={() => unlock(() => setStep2(true))}
           />
         </div>
 
