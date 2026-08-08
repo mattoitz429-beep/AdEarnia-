@@ -103,44 +103,13 @@ function ProfileTab() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const currency = asCurrency(profile?.currency);
+  const currency = asCurrency(
+    form.country ? currencyForCountry(form.country) : (profile?.currency ?? "NGN"),
+  );
   const isNG = form.country === "NG";
-  const bankCode = bankCodeForName(form.bank_name);
-  const nubanOk = isValidNuban(form.account_number);
-  const canVerify = isNG && Boolean(bankCode) && nubanOk;
-
-  const resolve = useServerFn(resolveNubanAccount);
-  const verification = useQuery({
-    queryKey: ["nuban", bankCode, form.account_number],
-    enabled: canVerify,
-    retry: false,
-    staleTime: 5 * 60 * 1000,
-    queryFn: () => resolve({ data: { bankCode, accountNumber: form.account_number.trim() } }),
-  });
-
-  const resolved = verification.data?.ok ? verification.data.accountName : null;
-
-  useEffect(() => {
-    if (isNG && resolved) {
-      setForm((f) => (f.account_name === resolved ? f : { ...f, account_name: resolved }));
-    }
-  }, [isNG, resolved]);
-
-
-  const verifyError =
-    isNG && form.account_number.trim().length > 0 && !nubanOk
-      ? "Account number must be exactly 10 digits."
-      : isNG && canVerify && verification.data && !verification.data.ok
-        ? verification.data.message
-        : isNG && canVerify && verification.isError
-          ? "Could not verify this account. Please try again."
-          : null;
-
-  const blockedNG = isNG && (!bankCode || !nubanOk || !verification.data?.ok);
 
   const linked = Boolean(profile?.bank_name && profile?.account_number && profile?.account_name);
-  const linkedVerified =
-    linked && (profile?.country !== "NG" || Boolean(bankCodeForName(profile?.bank_name ?? "")));
+  const linkedVerified = linked && (profile?.country !== "NG" || (profile?.account_number ?? "").length === 10);
 
   return (
     <div className="space-y-5">
