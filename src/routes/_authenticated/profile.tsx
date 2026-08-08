@@ -282,7 +282,7 @@ function ProfileTab() {
         <button
           type="button"
           onClick={() => save.mutate()}
-          disabled={save.isPending || blockedNG}
+          disabled={save.isPending}
           className="w-full rounded-xl gold-gradient px-4 py-3.5 text-sm font-extrabold text-gold-foreground shadow-gold disabled:opacity-60"
         >
           {save.isPending ? "Saving..." : "Save details"}
