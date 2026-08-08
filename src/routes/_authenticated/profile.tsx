@@ -191,11 +191,13 @@ function ProfileTab() {
             <div>
               <span className="text-xs font-semibold text-muted-foreground">Bank</span>
               <select
-                value={form.bank_name}
-                onChange={(e) => setForm({ ...form, bank_name: e.target.value, account_name: "" })}
+                value={NIGERIAN_BANKS.some((b) => b.name === form.bank_name) ? form.bank_name : "OTHER"}
+                onChange={(e) =>
+                  setForm({ ...form, bank_name: e.target.value === "OTHER" ? "" : e.target.value })
+                }
                 className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition-colors px-4 py-3 text-sm font-semibold outline-none focus:border-gold"
               >
-                <option value="">Select your bank</option>
+                <option value="OTHER">Select or type your bank</option>
                 {NIGERIAN_BANKS.map((b) => (
                   <option key={b.code} value={b.name}>
                     {b.name}
@@ -203,6 +205,13 @@ function ProfileTab() {
                 ))}
               </select>
             </div>
+            {!NIGERIAN_BANKS.some((b) => b.name === form.bank_name) && (
+              <Field
+                label="Bank name"
+                value={form.bank_name}
+                onChange={(v) => setForm({ ...form, bank_name: v })}
+              />
+            )}
             <label className="block">
               <span className="text-xs font-semibold text-muted-foreground">
                 NUBAN account number (10 digits)
@@ -216,46 +225,16 @@ function ProfileTab() {
                   setForm({
                     ...form,
                     account_number: e.target.value.replace(/\D/g, "").slice(0, 10),
-                    account_name: "",
                   })
                 }
                 className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition-colors px-4 py-3 text-sm font-semibold tabular-nums outline-none focus:border-gold"
               />
             </label>
-            <div>
-              <span className="text-xs font-semibold text-muted-foreground">
-                Account name (verified)
-              </span>
-              <div className="mt-1 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-md">
-                {verification.isFetching && canVerify ? (
-                  <Loader2 className="h-4 w-4 shrink-0 animate-spin text-gold" />
-                ) : verification.data?.ok ? (
-                  <ShieldCheck className="h-4 w-4 shrink-0 text-success" />
-                ) : verifyError ? (
-                  <XCircle className="h-4 w-4 shrink-0 text-destructive" />
-                ) : null}
-                <input
-                  readOnly
-                  value={
-                    verification.isFetching && canVerify
-                      ? "Verifying account..."
-                      : (form.account_name ?? "")
-                  }
-                  placeholder="Select bank and enter account number"
-                  className="w-full bg-transparent text-sm font-bold outline-none"
-                />
-              </div>
-            </div>
-            {verifyError && (
-              <p className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive">
-                {verifyError}
-              </p>
-            )}
-            {verification.data?.ok && (
-              <p className="text-xs font-semibold text-success">
-                Confirm this is your account before saving.
-              </p>
-            )}
+            <Field
+              label="Account holder name"
+              value={form.account_name}
+              onChange={(v) => setForm({ ...form, account_name: v })}
+            />
           </>
         ) : (
           <>
