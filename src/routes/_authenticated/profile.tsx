@@ -9,7 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile, useRefreshProfile } from "@/hooks/useProfile";
 import { COUNTRIES, asCurrency, currencyForCountry, formatMoney } from "@/lib/adearn";
 import { NIGERIAN_BANKS, bankCodeForName, isValidNuban } from "@/lib/nigerian-banks";
-import { resolveNubanAccount } from "@/lib/bank.functions";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
