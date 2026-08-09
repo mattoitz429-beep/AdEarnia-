@@ -1,14 +1,28 @@
-
-export const COOLDOWN_SECONDS = 15;
-
 export type CurrencyCode = "NGN" | "USD" | "EUR" | "GBP";
 
-export const REWARD_RATES: Record<CurrencyCode, number> = {
-  NGN: 35.0,
-  USD: 0.025,
-  EUR: 0.02,
-  GBP: 0.02,
+/** Reward paid for completing ONE daily task. */
+export const TASK_REWARDS: Record<CurrencyCode, number> = {
+  NGN: 3500,
+  USD: 2.5,
+  EUR: 2.3,
+  GBP: 2.0,
 };
+
+/** Minimum payout amount per currency. */
+export const MIN_PAYOUT: Record<CurrencyCode, number> = {
+  NGN: 35000,
+  USD: 25,
+  EUR: 23,
+  GBP: 20,
+};
+
+/** Price of one 8-digit withdrawal PIN (charged through Paystack, NGN). */
+export const PIN_PRICE_NGN = 5000;
+
+export const PAYSTACK_PUBLIC_KEY = "pk_live_5238f5b7f731c74b6c13a288f7a78eebd1f35654";
+
+export const MATTO_VIBES_URL = "https://mattovibes.netlify.app";
+export const TIKTOK_URL = "https://www.tiktok.com/@matto.itz.graphic?_r=1&_t=ZS-98iyVY5E8ZQ";
 
 export const CURRENCY_SYMBOLS: Record<CurrencyCode, string> = {
   NGN: "₦",
@@ -38,24 +52,19 @@ export function asCurrency(value: string | null | undefined): CurrencyCode {
 
 export function formatMoney(amount: number, currency: string): string {
   const code = asCurrency(currency);
-  const decimals = code === "NGN" ? 2 : 3;
   return `${CURRENCY_SYMBOLS[code]}${amount.toLocaleString(undefined, {
-    minimumFractionDigits: code === "NGN" ? 2 : 2,
-    maximumFractionDigits: decimals,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   })}`;
 }
 
-/** Progressive withdrawal tier minimum, based on completed payouts. */
-export function minCashout(currency: string, completedWithdrawals: number): number {
-  const n = Math.max(0, completedWithdrawals);
-  if (asCurrency(currency) === "NGN") {
-    if (n === 0) return 500;
-    if (n === 1) return 1000;
-    return 2000 + (n - 2) * 1000;
-  }
-  if (n === 0) return 1;
-  if (n === 1) return 2;
-  return 4 + (n - 2) * 2;
+export function taskReward(currency: string): number {
+  return TASK_REWARDS[asCurrency(currency)];
+}
+
+/** Minimum cashout for the user's currency. */
+export function minCashout(currency: string): number {
+  return MIN_PAYOUT[asCurrency(currency)];
 }
 
 export function detectCountryCode(): string {
@@ -65,7 +74,6 @@ export function detectCountryCode(): string {
     const locale = typeof navigator !== "undefined" ? navigator.language : "en-NG";
     const region = locale.split("-")[1]?.toUpperCase();
     if (region && COUNTRIES.some((c) => c.code === region)) return region;
-    if (region === "US") return "US";
   } catch {
     /* ignore */
   }
