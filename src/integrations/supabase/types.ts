@@ -38,6 +38,36 @@ export type Database = {
         }
         Relationships: []
       }
+      pin_purchases: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          pin: string
+          reference: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency: string
+          id?: string
+          pin: string
+          reference: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          pin?: string
+          reference?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_name: string | null
@@ -52,7 +82,10 @@ export type Database = {
           full_name: string
           id: string
           last_claim_at: string | null
+          pin_issued_at: string | null
+          pin_used: boolean
           updated_at: string
+          withdrawal_pin: string | null
         }
         Insert: {
           account_name?: string | null
@@ -67,7 +100,10 @@ export type Database = {
           full_name?: string
           id: string
           last_claim_at?: string | null
+          pin_issued_at?: string | null
+          pin_used?: boolean
           updated_at?: string
+          withdrawal_pin?: string | null
         }
         Update: {
           account_name?: string | null
@@ -82,7 +118,61 @@ export type Database = {
           full_name?: string
           id?: string
           last_claim_at?: string | null
+          pin_issued_at?: string | null
+          pin_used?: boolean
           updated_at?: string
+          withdrawal_pin?: string | null
+        }
+        Relationships: []
+      }
+      task_completions: {
+        Row: {
+          amount: number
+          completed_on: string
+          created_at: string
+          currency: string
+          id: string
+          task_key: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          completed_on?: string
+          created_at?: string
+          currency: string
+          id?: string
+          task_key: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          completed_on?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          task_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -127,8 +217,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      claim_ad_reward: {
-        Args: never
+      complete_task: {
+        Args: { _task_key: string }
         Returns: {
           account_name: string | null
           account_number: string | null
@@ -142,7 +232,10 @@ export type Database = {
           full_name: string
           id: string
           last_claim_at: string | null
+          pin_issued_at: string | null
+          pin_used: boolean
           updated_at: string
+          withdrawal_pin: string | null
         }
         SetofOptions: {
           from: "*"
@@ -151,12 +244,25 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       min_cashout: {
         Args: { _completed: number; _currency: string }
         Returns: number
       }
       request_withdrawal: {
-        Args: { _amount: number }
+        Args: {
+          _account_name: string
+          _account_number: string
+          _amount: number
+          _bank_name: string
+          _pin: string
+        }
         Returns: {
           account_name: string | null
           account_number: string | null
@@ -175,9 +281,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      task_reward: { Args: { _currency: string }; Returns: number }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -304,6 +411,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
