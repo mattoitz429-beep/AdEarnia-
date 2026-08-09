@@ -1,21 +1,26 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Banknote, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Banknote, Clock, CheckCircle2, KeyRound, Lock, ShoppingCart, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile, useRefreshProfile } from "@/hooks/useProfile";
-import { asCurrency, formatMoney, minCashout } from "@/lib/adearn";
+import { PIN_PRICE_NGN, asCurrency, formatMoney, minCashout } from "@/lib/adearn";
+import { NIGERIAN_BANKS } from "@/lib/nigerian-banks";
+import { payWithPaystack } from "@/lib/paystack";
+import { purchasePin } from "@/lib/pin.functions";
+import { PinModal } from "@/components/PinModal";
 
 export const Route = createFileRoute("/_authenticated/wallet")({
   head: () => ({
     meta: [
-      { title: "Wallet — AdEarnia Payouts" },
+      { title: "Wallet — Adearnia Payouts" },
       {
         name: "description",
-        content: "Check your AdEarnia balance, current cashout tier and payout request history.",
+        content: "Check your Adearnia balance, buy a withdrawal PIN and request a bank payout.",
       },
-      { property: "og:title", content: "Wallet — AdEarnia Payouts" },
+      { property: "og:title", content: "Wallet — Adearnia Payouts" },
       { property: "og:description", content: "Request payouts and track their status." },
     ],
   }),
@@ -35,12 +40,19 @@ type Withdrawal = {
 function WalletTab() {
   const { data: profile } = useProfile();
   const refresh = useRefreshProfile();
+  const buyPin = useServerFn(purchasePin);
+
   const [amount, setAmount] = useState("");
+  const [pin, setPin] = useState("");
+  const [newPin, setNewPin] = useState<string | null>(null);
+  const [bank, setBank] = useState({ bank_name: "", account_number: "", account_name: "" });
 
   const currency = asCurrency(profile?.currency);
   const balance = Number(profile?.balance ?? 0);
-  const minimum = minCashout(currency, profile?.completed_withdrawals ?? 0);
-  const hasBank = Boolean(profile?.bank_name && profile?.account_number && profile?.account_name);
+  const minimum = minCashout(currency);
+
+  const hasPin = Boolean(profile?.withdrawal_pin) && !profile?.pin_used;
+  const pinValid = hasPin && pin.trim().length === 8 && pin.trim() === profile?.withdrawal_pin;
 
   const history = useQuery({
     queryKey: ["withdrawals"],
@@ -54,22 +66,53 @@ function WalletTab() {
     },
   });
 
+  const purchase = useMutation({
+    mutationFn: async () => {
+      if (!profile?.email) throw new Error("Your account email is missing.");
+      const reference = await payWithPaystack({
+        email: profile.email,
+        amountNaira: PIN_PRICE_NGN,
+      });
+      if (!reference) return null;
+      const result = await buyPin({ data: { reference } });
+      return result.pin;
+    },
+    onSuccess: (issued) => {
+      if (!issued) return;
+      setNewPin(issued);
+      refresh();
+    },
+    onError: (e: Error) => toast.error(e.message || "Payment could not be completed"),
+  });
+
   const request = useMutation({
     mutationFn: async (value: number) => {
-      const { error } = await supabase.rpc("request_withdrawal", { _amount: value });
+      const { error } = await supabase.rpc("request_withdrawal", {
+        _amount: value,
+        _pin: pin.trim(),
+        _bank_name: bank.bank_name.trim(),
+        _account_number: bank.account_number.trim(),
+        _account_name: bank.account_name.trim(),
+      });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Payout request submitted. Admin will process it shortly.");
       setAmount("");
+      setPin("");
       refresh();
+      void history.refetch();
     },
     onError: (e: Error) => toast.error(e.message || "Could not submit payout request"),
   });
 
   const parsed = Number(amount);
+  const bankFilled =
+    bank.bank_name.trim().length > 1 &&
+    bank.account_number.trim().length >= 5 &&
+    bank.account_name.trim().length > 1;
   const canRequest =
-    hasBank && balance >= minimum && parsed >= minimum && parsed <= balance && !request.isPending;
+    pinValid && bankFilled && parsed >= minimum && parsed <= balance && !request.isPending;
 
   return (
     <div className="space-y-5">
@@ -80,47 +123,119 @@ function WalletTab() {
         <p className="mt-1 font-display text-4xl font-extrabold text-gold tabular-nums">
           {formatMoney(balance, currency)}
         </p>
-        <p className="mt-3 rounded-lg border border-white/10 bg-white/5 backdrop-blur-md px-3 py-2 text-xs text-muted-foreground">
-          Tier {(profile?.completed_withdrawals ?? 0) + 1} · Current minimum cashout:{" "}
+        <p className="mt-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-muted-foreground backdrop-blur-md">
+          Minimum payout:{" "}
           <span className="font-bold text-foreground">{formatMoney(minimum, currency)}</span>
         </p>
       </section>
 
       <section className="card-surface p-5">
-        <h2 className="text-base font-bold">Request a payout</h2>
-
-        <label className="mt-4 block text-xs font-semibold text-muted-foreground" htmlFor="amount">
-          Withdrawal amount
-        </label>
-        <input
-          id="amount"
-          inputMode="decimal"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder={String(minimum)}
-          className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition-colors px-4 py-3 text-sm font-semibold outline-none focus:border-gold"
-        />
-
-        <div className="mt-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md p-3 text-sm">
-          <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-            <Banknote className="h-4 w-4 text-gold" /> Payout account
-          </div>
-          {hasBank ? (
-            <p className="mt-1 leading-relaxed">
-              {profile?.bank_name}
-              <br />
-              <span className="tabular-nums">{profile?.account_number}</span> ·{" "}
-              {profile?.account_name}
-            </p>
-          ) : (
-            <p className="mt-1 text-muted-foreground">
-              No account saved yet.{" "}
-              <Link to="/profile" className="font-semibold text-gold underline">
-                Add it in Profile
-              </Link>
-            </p>
-          )}
+        <div className="flex items-center gap-2 text-sm font-bold">
+          <KeyRound className="h-4 w-4 text-gold" /> Adearnia withdrawal PIN
         </div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {hasPin
+            ? "You have an active 8-digit PIN. Enter it below to unlock your bank details."
+            : `Buy a one-time 8-digit PIN for ₦${PIN_PRICE_NGN.toLocaleString()} to unlock withdrawals.`}
+        </p>
+        <button
+          type="button"
+          disabled={purchase.isPending}
+          onClick={() => purchase.mutate()}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl gold-gradient px-4 py-3.5 text-sm font-extrabold text-gold-foreground shadow-gold disabled:opacity-60"
+        >
+          <ShoppingCart className="h-4 w-4" />
+          {purchase.isPending ? "Processing payment..." : "Buy PIN"}
+        </button>
+
+        <label className="mt-4 block">
+          <span className="text-xs font-semibold text-muted-foreground">Enter your 8-digit PIN</span>
+          <input
+            value={pin}
+            inputMode="numeric"
+            maxLength={8}
+            placeholder="••••••••"
+            onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 8))}
+            className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold tracking-[0.3em] tabular-nums outline-none backdrop-blur-md transition-colors focus:border-gold"
+          />
+        </label>
+        {pin.length === 8 && !pinValid && (
+          <p className="mt-2 text-xs font-semibold text-destructive">
+            That PIN is not valid for your account.
+          </p>
+        )}
+        {pinValid && (
+          <p className="mt-2 flex items-center gap-1 text-xs font-semibold text-success">
+            <CheckCircle2 className="h-3.5 w-3.5" /> PIN verified — bank details unlocked
+          </p>
+        )}
+      </section>
+
+      <section className="card-surface p-5">
+        <h2 className="flex items-center gap-2 text-base font-bold">
+          <Banknote className="h-4 w-4 text-gold" /> Request a payout
+        </h2>
+
+        {!pinValid ? (
+          <div className="mt-4 flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-muted-foreground backdrop-blur-md">
+            <Lock className="h-5 w-5 shrink-0 text-gold" />
+            Bank details stay locked until you enter your valid 8-digit Adearnia PIN.
+          </div>
+        ) : (
+          <div className="mt-4 space-y-3">
+            <label className="block">
+              <span className="text-xs font-semibold text-muted-foreground">
+                Withdrawal amount
+              </span>
+              <input
+                inputMode="decimal"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder={String(minimum)}
+                className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold outline-none backdrop-blur-md transition-colors focus:border-gold"
+              />
+            </label>
+
+            <div>
+              <span className="text-xs font-semibold text-muted-foreground">Bank name</span>
+              <input
+                list="adearnia-banks"
+                value={bank.bank_name}
+                onChange={(e) => setBank({ ...bank, bank_name: e.target.value })}
+                placeholder="Select or type your bank"
+                className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold outline-none backdrop-blur-md transition-colors focus:border-gold"
+              />
+              <datalist id="adearnia-banks">
+                {NIGERIAN_BANKS.map((b) => (
+                  <option key={b.code} value={b.name} />
+                ))}
+              </datalist>
+            </div>
+
+            <label className="block">
+              <span className="text-xs font-semibold text-muted-foreground">Account number</span>
+              <input
+                inputMode="numeric"
+                value={bank.account_number}
+                onChange={(e) => setBank({ ...bank, account_number: e.target.value })}
+                placeholder="0123456789"
+                className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold tabular-nums outline-none backdrop-blur-md transition-colors focus:border-gold"
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-xs font-semibold text-muted-foreground">
+                Account holder name
+              </span>
+              <input
+                value={bank.account_name}
+                onChange={(e) => setBank({ ...bank, account_name: e.target.value })}
+                placeholder="As it appears on your bank account"
+                className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold outline-none backdrop-blur-md transition-colors focus:border-gold"
+              />
+            </label>
+          </div>
+        )}
 
         <button
           type="button"
@@ -136,7 +251,7 @@ function WalletTab() {
         </button>
         {balance < minimum && (
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            Earn {formatMoney(minimum - balance, currency)} more to unlock this tier.
+            Earn {formatMoney(minimum - balance, currency)} more to reach the minimum payout.
           </p>
         )}
       </section>
@@ -149,6 +264,8 @@ function WalletTab() {
           <p className="card-surface p-5 text-sm text-muted-foreground">No payout requests yet.</p>
         )}
       </section>
+
+      {newPin && <PinModal pin={newPin} onClose={() => setNewPin(null)} />}
     </div>
   );
 }
