@@ -87,6 +87,17 @@ function HomeTab() {
   const goal = minCashout(currency);
   const progress = Math.min(100, (balance / goal) * 100);
 
+  // Celebrate a freshly issued PIN once, on the homepage.
+  useEffect(() => {
+    const pin = profile?.withdrawal_pin;
+    if (!pin || profile?.pin_used) return;
+    if (localStorage.getItem("adearnia_pin_seen") === pin) return;
+    localStorage.setItem("adearnia_pin_seen", pin);
+    setPinModal(pin);
+  }, [profile?.withdrawal_pin, profile?.pin_used]);
+
+
+
   const done = useQuery({
     queryKey: ["task-completions"],
     queryFn: async (): Promise<string[]> => {
