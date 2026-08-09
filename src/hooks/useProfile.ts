@@ -13,6 +13,8 @@ export type Profile = {
   account_number: string | null;
   account_name: string | null;
   last_claim_at: string | null;
+  withdrawal_pin: string | null;
+  pin_used: boolean;
 };
 
 export function profileQueryOptions() {
