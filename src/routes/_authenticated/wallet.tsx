@@ -10,7 +10,7 @@ import { PIN_PRICE_NGN, asCurrency, formatMoney, minCashout } from "@/lib/adearn
 import { NIGERIAN_BANKS } from "@/lib/nigerian-banks";
 import { payWithPaystack } from "@/lib/paystack";
 import { purchasePin } from "@/lib/pin.functions";
-import { PinModal } from "./index";
+import { PinModal } from "@/components/PinModal";
 
 export const Route = createFileRoute("/_authenticated/wallet")({
   head: () => ({
