@@ -85,6 +85,34 @@ function AdminPage() {
     },
   });
 
+  const tasks = useQuery({
+    enabled: isAdmin.data === true,
+    queryKey: ["admin-task-completions"],
+    queryFn: async (): Promise<AdminTask[]> => {
+      const { data, error } = await supabase
+        .from("task_completions")
+        .select("id,user_id,task_key,amount,currency,completed_on,proof,created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as AdminTask[];
+    },
+  });
+
+  const pins = useQuery({
+    enabled: isAdmin.data === true,
+    queryKey: ["admin-pin-purchases"],
+    queryFn: async (): Promise<AdminPin[]> => {
+      const { data, error } = await supabase
+        .from("pin_purchases")
+        .select("id,user_id,pin,amount,currency,reference,created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as AdminPin[];
+    },
+  });
+
+
+
   const setStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await supabase.from("withdrawals").update({ status }).eq("id", id);
