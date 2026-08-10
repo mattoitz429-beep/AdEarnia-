@@ -219,24 +219,78 @@ function AdminPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-bold">Registered users</h2>
-        {users.data?.map((u) => (
-          <div key={u.id} className="card-surface space-y-1 p-4 text-sm">
-            <p className="truncate font-bold">{u.full_name || "—"}</p>
-            <p className="break-all text-xs text-muted-foreground">{u.email}</p>
-            <p className="text-xs text-muted-foreground">
-              {u.country} · {formatMoney(Number(u.balance), u.currency)}
-            </p>
-            <p className="break-words text-xs text-muted-foreground">
-              Bank: {u.bank_name ?? "—"} · {u.account_number ?? "—"} · {u.account_name ?? "—"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              PIN: <span className="tabular-nums text-foreground">{u.withdrawal_pin ?? "—"}</span>{" "}
-              {u.withdrawal_pin ? (u.pin_used ? "(used)" : "(active)") : ""}
-            </p>
-          </div>
-        ))}
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-base font-bold">Registered users</h2>
+          <span className="text-xs text-muted-foreground">{filtered.length} shown</span>
+        </div>
+        <div className="card-surface flex items-center gap-2 px-4 py-3">
+          <Search className="h-4 w-4 shrink-0 text-gold" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search email, name, bank, account no. or PIN"
+            className="w-full bg-transparent text-sm font-semibold outline-none"
+          />
+        </div>
+        {filtered.map((u) => {
+          const userTasks = (tasks.data ?? []).filter((t) => t.user_id === u.id);
+          const userPins = (pins.data ?? []).filter((p) => p.user_id === u.id);
+          const userPayouts = (payouts.data ?? []).filter((w) => w.user_id === u.id);
+          return (
+            <div key={u.id} className="card-surface space-y-1 p-4 text-sm">
+              <p className="truncate font-bold">{u.full_name || "—"}</p>
+              <p className="break-all text-xs text-muted-foreground">{u.email}</p>
+              <p className="text-xs text-muted-foreground">
+                {u.country} · {formatMoney(Number(u.balance), u.currency)}
+              </p>
+              <p className="break-words text-xs text-muted-foreground">
+                Bank: {u.bank_name ?? "—"} · {u.account_number ?? "—"} · {u.account_name ?? "—"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                PIN: <span className="tabular-nums text-foreground">{u.withdrawal_pin ?? "—"}</span>{" "}
+                {u.withdrawal_pin ? (u.pin_used ? "(used)" : "(active)") : ""}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                PINs bought:{" "}
+                <span className="text-foreground">
+                  {userPins.length
+                    ? userPins
+                        .map((p) => `${p.pin} (${formatMoney(Number(p.amount), p.currency)})`)
+                        .join(", ")
+                    : "—"}
+                </span>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Payout requests:{" "}
+                <span className="text-foreground">
+                  {userPayouts.length
+                    ? userPayouts
+                        .map((w) => `${formatMoney(Number(w.amount), w.currency)} — ${w.status}`)
+                        .join(", ")
+                    : "—"}
+                </span>
+              </p>
+              <div className="pt-1">
+                <p className="text-xs font-bold">Tasks completed ({userTasks.length})</p>
+                {userTasks.length ? (
+                  <ul className="mt-1 space-y-1">
+                    {userTasks.map((t) => (
+                      <li key={t.id} className="break-words text-xs text-muted-foreground">
+                        {t.task_key} · {t.completed_on} ·{" "}
+                        {formatMoney(Number(t.amount), t.currency)}
+                        {t.proof ? ` · proof: ${t.proof}` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-muted-foreground">No tasks completed yet.</p>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </section>
+
     </div>
   );
 }
