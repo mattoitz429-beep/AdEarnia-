@@ -78,7 +78,7 @@ function puzzles(): PuzzleTask[] {
 function HomeTab() {
   const { data: profile } = useProfile();
   const refresh = useRefreshProfile();
-  const [visited, setVisited] = useState<Record<string, boolean>>({});
+  const [visited, setVisited] = useState<Record<string, number>>({});
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [pinModal, setPinModal] = useState<string | null>(null);
 
