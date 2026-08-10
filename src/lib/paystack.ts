@@ -39,7 +39,8 @@ export function loadPaystack(): Promise<void> {
 /** Opens the Paystack popup and resolves with the transaction reference. */
 export async function payWithPaystack(params: {
   email: string;
-  amountNaira: number;
+  amount: number;
+  currency?: string;
 }): Promise<string | null> {
   await loadPaystack();
   const pop = window.PaystackPop;
@@ -49,8 +50,8 @@ export async function payWithPaystack(params: {
     const handler = pop.setup({
       key: PAYSTACK_PUBLIC_KEY,
       email: params.email,
-      amount: Math.round(params.amountNaira * 100),
-      currency: "NGN",
+      amount: Math.round(params.amount * 100),
+      currency: params.currency ?? "NGN",
       ref: `adearnia-${Date.now()}-${Math.floor(Math.random() * 1e6)}`,
       callback: (response) => resolve(response.reference),
       onClose: () => resolve(null),
