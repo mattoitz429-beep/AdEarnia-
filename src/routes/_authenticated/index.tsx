@@ -260,13 +260,17 @@ function HomeTab() {
   );
 }
 
+const DWELL_SECONDS = 45;
+
 function LinkTask({
   title,
   instruction,
   actionLabel,
+  proofLabel,
+  proofPlaceholder,
   reward,
   done,
-  visited,
+  openedAt,
   onOpen,
   onClaim,
   pending,
@@ -274,13 +278,31 @@ function LinkTask({
   title: string;
   instruction: string;
   actionLabel: string;
+  proofLabel: string;
+  proofPlaceholder: string;
   reward: string;
   done: boolean;
-  visited: boolean;
+  openedAt: number | undefined;
   onOpen: () => void;
-  onClaim: () => void;
+  onClaim: (proof: string) => void;
   pending: boolean;
 }) {
+  const [proof, setProof] = useState("");
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!openedAt) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [openedAt]);
+
+  const remaining = openedAt
+    ? Math.max(0, DWELL_SECONDS - Math.floor((now - openedAt) / 1000))
+    : DWELL_SECONDS;
+  const waited = Boolean(openedAt) && remaining === 0;
+  const proofOk = proof.trim().length >= 3;
+  const canClaim = waited && proofOk && !pending;
+
   return (
     <div
       className={`rounded-xl border p-4 ${
@@ -297,28 +319,59 @@ function LinkTask({
           <CheckCircle2 className="h-4 w-4" /> Completed today
         </p>
       ) : (
-        <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className="mt-3 space-y-2">
           <button
             type="button"
             onClick={onOpen}
-            className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-xs font-bold backdrop-blur-md transition hover:border-gold/50"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-xs font-bold backdrop-blur-md transition hover:border-gold/50"
           >
             <ExternalLink className="h-4 w-4 text-gold" /> {actionLabel}
           </button>
-          <button
-            type="button"
-            disabled={!visited || pending}
-            onClick={onClaim}
-            className={`rounded-xl px-3 py-3 text-xs font-extrabold transition ${
-              visited && !pending
-                ? "gold-gradient text-gold-foreground shadow-gold"
-                : "cursor-not-allowed border border-white/10 bg-white/5 text-muted-foreground backdrop-blur-md"
-            }`}
-          >
-            I've completed it
-          </button>
+
+          {!openedAt ? (
+            <p className="text-[11px] text-muted-foreground">
+              Open the link first — the claim button stays locked until you do.
+            </p>
+          ) : (
+            <>
+              <label className="block">
+                <span className="text-[11px] font-semibold text-muted-foreground">
+                  {proofLabel}
+                </span>
+                <input
+                  value={proof}
+                  onChange={(e) => setProof(e.target.value)}
+                  placeholder={proofPlaceholder}
+                  className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs font-semibold outline-none backdrop-blur-md transition-colors focus:border-gold"
+                />
+              </label>
+              {!waited && (
+                <p className="text-[11px] font-semibold text-warning tabular-nums">
+                  Verifying your visit — claim unlocks in {remaining}s
+                </p>
+              )}
+              {waited && !proofOk && (
+                <p className="text-[11px] text-muted-foreground">
+                  Add your proof to unlock the claim button.
+                </p>
+              )}
+              <button
+                type="button"
+                disabled={!canClaim}
+                onClick={() => onClaim(proof.trim())}
+                className={`w-full rounded-xl px-3 py-3 text-xs font-extrabold transition ${
+                  canClaim
+                    ? "gold-gradient text-gold-foreground shadow-gold"
+                    : "cursor-not-allowed border border-white/10 bg-white/5 text-muted-foreground backdrop-blur-md"
+                }`}
+              >
+                Submit proof &amp; claim
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
   );
+
 }
