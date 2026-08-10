@@ -49,7 +49,10 @@ function WalletTab() {
 
   const currency = asCurrency(profile?.currency);
   const balance = Number(profile?.balance ?? 0);
-  const minimum = minCashout(currency);
+  const tiers = payoutTiers(currency);
+  const [tier, setTier] = useState<number>(tiers[0]!);
+  const minimum = tier;
+  const price = pinPrice(tier);
 
   const hasPin = Boolean(profile?.withdrawal_pin) && !profile?.pin_used;
   const pinValid = hasPin && pin.trim().length === 8 && pin.trim() === profile?.withdrawal_pin;
@@ -71,7 +74,8 @@ function WalletTab() {
       if (!profile?.email) throw new Error("Your account email is missing.");
       const reference = await payWithPaystack({
         email: profile.email,
-        amountNaira: PIN_PRICE_NGN,
+        amount: price,
+        currency,
       });
       if (!reference) return null;
       const result = await buyPin({ data: { reference } });
@@ -124,9 +128,45 @@ function WalletTab() {
           {formatMoney(balance, currency)}
         </p>
         <p className="mt-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-muted-foreground backdrop-blur-md">
-          Minimum payout:{" "}
+          Selected tier minimum:{" "}
           <span className="font-bold text-foreground">{formatMoney(minimum, currency)}</span>
         </p>
+      </section>
+
+      <section className="card-surface p-5">
+        <div className="flex items-center gap-2 text-sm font-bold">
+          <Layers className="h-4 w-4 text-gold" /> Choose your withdrawal tier
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          The PIN costs 10% of the tier you want to withdraw.
+        </p>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          {tiers.map((value, i) => {
+            const active = tier === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setTier(value)}
+                className={`rounded-xl border p-4 text-left transition ${
+                  active
+                    ? "border-gold/60 bg-gold/10 shadow-gold"
+                    : "border-white/10 bg-white/5 backdrop-blur-md hover:border-gold/40"
+                }`}
+              >
+                <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Tier {i + 1}
+                </p>
+                <p className="mt-1 text-lg font-extrabold tabular-nums">
+                  {formatMoney(value, currency)}
+                </p>
+                <p className="mt-1 text-xs font-semibold text-gold tabular-nums">
+                  PIN {formatMoney(pinPrice(value), currency)}
+                </p>
+              </button>
+            );
+          })}
+        </div>
       </section>
 
       <section className="card-surface p-5">
@@ -136,7 +176,7 @@ function WalletTab() {
         <p className="mt-1 text-xs text-muted-foreground">
           {hasPin
             ? "You have an active 8-digit PIN. Enter it below to unlock your bank details."
-            : `Buy a one-time 8-digit PIN for ₦${PIN_PRICE_NGN.toLocaleString()} to unlock withdrawals.`}
+            : `Buy a one-time 8-digit PIN for ${formatMoney(price, currency)} to unlock ${formatMoney(tier, currency)} payouts.`}
         </p>
         <button
           type="button"
@@ -145,7 +185,7 @@ function WalletTab() {
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl gold-gradient px-4 py-3.5 text-sm font-extrabold text-gold-foreground shadow-gold disabled:opacity-60"
         >
           <ShoppingCart className="h-4 w-4" />
-          {purchase.isPending ? "Processing payment..." : "Buy PIN"}
+          {purchase.isPending ? "Processing payment..." : `Buy PIN — ${formatMoney(price, currency)}`}
         </button>
 
         <label className="mt-4 block">
@@ -170,6 +210,7 @@ function WalletTab() {
           </p>
         )}
       </section>
+
 
       <section className="card-surface p-5">
         <h2 className="flex items-center gap-2 text-base font-bold">
