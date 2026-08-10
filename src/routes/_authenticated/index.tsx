@@ -168,24 +168,29 @@ function HomeTab() {
             title="Task 1 · Matto Vibes"
             instruction="Sign up on Matto Vibes and make a post."
             actionLabel="Open Matto Vibes"
+            proofLabel="Paste the link to your Matto Vibes post"
+            proofPlaceholder="https://mattovibes.netlify.app/..."
             reward={formatMoney(reward, currency)}
             done={isDone("task1")}
-            visited={Boolean(visited["task1"])}
+            openedAt={visited["task1"]}
             onOpen={() => openLink("task1", MATTO_VIBES_URL)}
-            onClaim={() => complete.mutate("task1")}
+            onClaim={(proof) => complete.mutate({ taskKey: "task1", proof })}
             pending={complete.isPending}
           />
           <LinkTask
             title="Task 2 · TikTok"
             instruction="Follow and like our official TikTok account."
             actionLabel="Open TikTok"
+            proofLabel="Enter the TikTok username you followed with"
+            proofPlaceholder="@yourhandle"
             reward={formatMoney(reward, currency)}
             done={isDone("task2")}
-            visited={Boolean(visited["task2"])}
+            openedAt={visited["task2"]}
             onOpen={() => openLink("task2", TIKTOK_URL)}
-            onClaim={() => complete.mutate("task2")}
+            onClaim={(proof) => complete.mutate({ taskKey: "task2", proof })}
             pending={complete.isPending}
           />
+
 
           {puzzles().map((task) => (
             <div
