@@ -132,6 +132,7 @@ export type Database = {
           created_at: string
           currency: string
           id: string
+          proof: string | null
           task_key: string
           user_id: string
         }
@@ -141,6 +142,7 @@ export type Database = {
           created_at?: string
           currency: string
           id?: string
+          proof?: string | null
           task_key: string
           user_id: string
         }
@@ -150,6 +152,7 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          proof?: string | null
           task_key?: string
           user_id?: string
         }
@@ -217,33 +220,61 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      complete_task: {
-        Args: { _task_key: string }
-        Returns: {
-          account_name: string | null
-          account_number: string | null
-          balance: number
-          bank_name: string | null
-          completed_withdrawals: number
-          country: string
-          created_at: string
-          currency: string
-          email: string
-          full_name: string
-          id: string
-          last_claim_at: string | null
-          pin_issued_at: string | null
-          pin_used: boolean
-          updated_at: string
-          withdrawal_pin: string | null
-        }
-        SetofOptions: {
-          from: "*"
-          to: "profiles"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
+      complete_task:
+        | {
+            Args: { _task_key: string }
+            Returns: {
+              account_name: string | null
+              account_number: string | null
+              balance: number
+              bank_name: string | null
+              completed_withdrawals: number
+              country: string
+              created_at: string
+              currency: string
+              email: string
+              full_name: string
+              id: string
+              last_claim_at: string | null
+              pin_issued_at: string | null
+              pin_used: boolean
+              updated_at: string
+              withdrawal_pin: string | null
+            }
+            SetofOptions: {
+              from: "*"
+              to: "profiles"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: { _proof?: string; _task_key: string }
+            Returns: {
+              account_name: string | null
+              account_number: string | null
+              balance: number
+              bank_name: string | null
+              completed_withdrawals: number
+              country: string
+              created_at: string
+              currency: string
+              email: string
+              full_name: string
+              id: string
+              last_claim_at: string | null
+              pin_issued_at: string | null
+              pin_used: boolean
+              updated_at: string
+              withdrawal_pin: string | null
+            }
+            SetofOptions: {
+              from: "*"
+              to: "profiles"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -253,6 +284,10 @@ export type Database = {
       }
       min_cashout: {
         Args: { _completed: number; _currency: string }
+        Returns: number
+      }
+      pin_price: {
+        Args: { _currency: string; _payout: number }
         Returns: number
       }
       request_withdrawal: {

@@ -8,16 +8,33 @@ export const TASK_REWARDS: Record<CurrencyCode, number> = {
   GBP: 2.0,
 };
 
-/** Minimum payout amount per currency. */
-export const MIN_PAYOUT: Record<CurrencyCode, number> = {
-  NGN: 35000,
-  USD: 25,
-  EUR: 23,
-  GBP: 20,
+/** Progressive withdrawal tiers per currency (lowest tier first). */
+export const PAYOUT_TIERS: Record<CurrencyCode, number[]> = {
+  NGN: [17500, 35000],
+  USD: [12.5, 25],
+  EUR: [11.5, 23],
+  GBP: [10, 20],
 };
 
-/** Price of one 8-digit withdrawal PIN (charged through Paystack, NGN). */
-export const PIN_PRICE_NGN = 5000;
+/** Minimum payout amount per currency (the lowest tier). */
+export const MIN_PAYOUT: Record<CurrencyCode, number> = {
+  NGN: 17500,
+  USD: 12.5,
+  EUR: 11.5,
+  GBP: 10,
+};
+
+/** PIN price scales with the tier being withdrawn — 10% of the payout. */
+export const PIN_PRICE_RATE = 0.1;
+
+export function payoutTiers(currency: string): number[] {
+  return PAYOUT_TIERS[asCurrency(currency)];
+}
+
+export function pinPrice(payout: number): number {
+  return Math.round(payout * PIN_PRICE_RATE * 100) / 100;
+}
+
 
 export const PAYSTACK_PUBLIC_KEY = "pk_live_5238f5b7f731c74b6c13a288f7a78eebd1f35654";
 

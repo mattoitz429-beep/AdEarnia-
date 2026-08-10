@@ -78,7 +78,7 @@ function puzzles(): PuzzleTask[] {
 function HomeTab() {
   const { data: profile } = useProfile();
   const refresh = useRefreshProfile();
-  const [visited, setVisited] = useState<Record<string, boolean>>({});
+  const [visited, setVisited] = useState<Record<string, number>>({});
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [pinModal, setPinModal] = useState<string | null>(null);
 
@@ -113,8 +113,11 @@ function HomeTab() {
   });
 
   const complete = useMutation({
-    mutationFn: async (taskKey: string) => {
-      const { error } = await supabase.rpc("complete_task", { _task_key: taskKey });
+    mutationFn: async ({ taskKey, proof }: { taskKey: string; proof?: string }) => {
+      const { error } = await supabase.rpc("complete_task", {
+        _task_key: taskKey,
+        _proof: proof ?? null,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -130,7 +133,7 @@ function HomeTab() {
 
   function openLink(key: string, url: string) {
     window.open(url, "_blank", "noopener,noreferrer");
-    setVisited((v) => ({ ...v, [key]: true }));
+    setVisited((v) => ({ ...v, [key]: Date.now() }));
   }
 
   function submitPuzzle(task: PuzzleTask) {
@@ -138,8 +141,9 @@ function HomeTab() {
       toast.error("That answer is not correct. Try again.");
       return;
     }
-    complete.mutate(task.key);
+    complete.mutate({ taskKey: task.key });
   }
+
 
   return (
     <div className="space-y-5">
@@ -164,24 +168,29 @@ function HomeTab() {
             title="Task 1 · Matto Vibes"
             instruction="Sign up on Matto Vibes and make a post."
             actionLabel="Open Matto Vibes"
+            proofLabel="Paste the link to your Matto Vibes post"
+            proofPlaceholder="https://mattovibes.netlify.app/..."
             reward={formatMoney(reward, currency)}
             done={isDone("task1")}
-            visited={Boolean(visited["task1"])}
+            openedAt={visited["task1"]}
             onOpen={() => openLink("task1", MATTO_VIBES_URL)}
-            onClaim={() => complete.mutate("task1")}
+            onClaim={(proof) => complete.mutate({ taskKey: "task1", proof })}
             pending={complete.isPending}
           />
           <LinkTask
             title="Task 2 · TikTok"
             instruction="Follow and like our official TikTok account."
             actionLabel="Open TikTok"
+            proofLabel="Enter the TikTok username you followed with"
+            proofPlaceholder="@yourhandle"
             reward={formatMoney(reward, currency)}
             done={isDone("task2")}
-            visited={Boolean(visited["task2"])}
+            openedAt={visited["task2"]}
             onOpen={() => openLink("task2", TIKTOK_URL)}
-            onClaim={() => complete.mutate("task2")}
+            onClaim={(proof) => complete.mutate({ taskKey: "task2", proof })}
             pending={complete.isPending}
           />
+
 
           {puzzles().map((task) => (
             <div
@@ -251,13 +260,17 @@ function HomeTab() {
   );
 }
 
+const DWELL_SECONDS = 45;
+
 function LinkTask({
   title,
   instruction,
   actionLabel,
+  proofLabel,
+  proofPlaceholder,
   reward,
   done,
-  visited,
+  openedAt,
   onOpen,
   onClaim,
   pending,
@@ -265,13 +278,31 @@ function LinkTask({
   title: string;
   instruction: string;
   actionLabel: string;
+  proofLabel: string;
+  proofPlaceholder: string;
   reward: string;
   done: boolean;
-  visited: boolean;
+  openedAt: number | undefined;
   onOpen: () => void;
-  onClaim: () => void;
+  onClaim: (proof: string) => void;
   pending: boolean;
 }) {
+  const [proof, setProof] = useState("");
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!openedAt) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [openedAt]);
+
+  const remaining = openedAt
+    ? Math.max(0, DWELL_SECONDS - Math.floor((now - openedAt) / 1000))
+    : DWELL_SECONDS;
+  const waited = Boolean(openedAt) && remaining === 0;
+  const proofOk = proof.trim().length >= 3;
+  const canClaim = waited && proofOk && !pending;
+
   return (
     <div
       className={`rounded-xl border p-4 ${
@@ -288,28 +319,59 @@ function LinkTask({
           <CheckCircle2 className="h-4 w-4" /> Completed today
         </p>
       ) : (
-        <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className="mt-3 space-y-2">
           <button
             type="button"
             onClick={onOpen}
-            className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-xs font-bold backdrop-blur-md transition hover:border-gold/50"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-xs font-bold backdrop-blur-md transition hover:border-gold/50"
           >
             <ExternalLink className="h-4 w-4 text-gold" /> {actionLabel}
           </button>
-          <button
-            type="button"
-            disabled={!visited || pending}
-            onClick={onClaim}
-            className={`rounded-xl px-3 py-3 text-xs font-extrabold transition ${
-              visited && !pending
-                ? "gold-gradient text-gold-foreground shadow-gold"
-                : "cursor-not-allowed border border-white/10 bg-white/5 text-muted-foreground backdrop-blur-md"
-            }`}
-          >
-            I've completed it
-          </button>
+
+          {!openedAt ? (
+            <p className="text-[11px] text-muted-foreground">
+              Open the link first — the claim button stays locked until you do.
+            </p>
+          ) : (
+            <>
+              <label className="block">
+                <span className="text-[11px] font-semibold text-muted-foreground">
+                  {proofLabel}
+                </span>
+                <input
+                  value={proof}
+                  onChange={(e) => setProof(e.target.value)}
+                  placeholder={proofPlaceholder}
+                  className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-xs font-semibold outline-none backdrop-blur-md transition-colors focus:border-gold"
+                />
+              </label>
+              {!waited && (
+                <p className="text-[11px] font-semibold text-warning tabular-nums">
+                  Verifying your visit — claim unlocks in {remaining}s
+                </p>
+              )}
+              {waited && !proofOk && (
+                <p className="text-[11px] text-muted-foreground">
+                  Add your proof to unlock the claim button.
+                </p>
+              )}
+              <button
+                type="button"
+                disabled={!canClaim}
+                onClick={() => onClaim(proof.trim())}
+                className={`w-full rounded-xl px-3 py-3 text-xs font-extrabold transition ${
+                  canClaim
+                    ? "gold-gradient text-gold-foreground shadow-gold"
+                    : "cursor-not-allowed border border-white/10 bg-white/5 text-muted-foreground backdrop-blur-md"
+                }`}
+              >
+                Submit proof &amp; claim
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
   );
+
 }

@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ShieldCheck } from "lucide-react";
+import { Search, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/adearn";
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -44,6 +46,29 @@ type AdminWithdrawal = {
   created_at: string;
 };
 
+type AdminTask = {
+  id: string;
+  user_id: string;
+  task_key: string;
+  amount: number;
+  currency: string;
+  completed_on: string;
+  proof: string | null;
+  created_at: string;
+};
+
+type AdminPin = {
+  id: string;
+  user_id: string;
+  pin: string;
+  amount: number;
+  currency: string;
+  reference: string;
+  created_at: string;
+};
+
+
+
 function AdminPage() {
   const isAdmin = useQuery({
     queryKey: ["is-admin"],
@@ -82,6 +107,45 @@ function AdminPage() {
       return (data ?? []) as AdminWithdrawal[];
     },
   });
+
+  const tasks = useQuery({
+    enabled: isAdmin.data === true,
+    queryKey: ["admin-task-completions"],
+    queryFn: async (): Promise<AdminTask[]> => {
+      const { data, error } = await supabase
+        .from("task_completions")
+        .select("id,user_id,task_key,amount,currency,completed_on,proof,created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as AdminTask[];
+    },
+  });
+
+  const pins = useQuery({
+    enabled: isAdmin.data === true,
+    queryKey: ["admin-pin-purchases"],
+    queryFn: async (): Promise<AdminPin[]> => {
+      const { data, error } = await supabase
+        .from("pin_purchases")
+        .select("id,user_id,pin,amount,currency,reference,created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as AdminPin[];
+    },
+  });
+
+  const [search, setSearch] = useState("");
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const list = users.data ?? [];
+    if (!q) return list;
+    return list.filter((u) =>
+      [u.full_name, u.email, u.bank_name, u.account_number, u.account_name, u.withdrawal_pin]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(q)),
+    );
+  }, [users.data, search]);
+
 
   const setStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
@@ -155,24 +219,78 @@ function AdminPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-bold">Registered users</h2>
-        {users.data?.map((u) => (
-          <div key={u.id} className="card-surface space-y-1 p-4 text-sm">
-            <p className="truncate font-bold">{u.full_name || "—"}</p>
-            <p className="break-all text-xs text-muted-foreground">{u.email}</p>
-            <p className="text-xs text-muted-foreground">
-              {u.country} · {formatMoney(Number(u.balance), u.currency)}
-            </p>
-            <p className="break-words text-xs text-muted-foreground">
-              Bank: {u.bank_name ?? "—"} · {u.account_number ?? "—"} · {u.account_name ?? "—"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              PIN: <span className="tabular-nums text-foreground">{u.withdrawal_pin ?? "—"}</span>{" "}
-              {u.withdrawal_pin ? (u.pin_used ? "(used)" : "(active)") : ""}
-            </p>
-          </div>
-        ))}
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-base font-bold">Registered users</h2>
+          <span className="text-xs text-muted-foreground">{filtered.length} shown</span>
+        </div>
+        <div className="card-surface flex items-center gap-2 px-4 py-3">
+          <Search className="h-4 w-4 shrink-0 text-gold" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search email, name, bank, account no. or PIN"
+            className="w-full bg-transparent text-sm font-semibold outline-none"
+          />
+        </div>
+        {filtered.map((u) => {
+          const userTasks = (tasks.data ?? []).filter((t) => t.user_id === u.id);
+          const userPins = (pins.data ?? []).filter((p) => p.user_id === u.id);
+          const userPayouts = (payouts.data ?? []).filter((w) => w.user_id === u.id);
+          return (
+            <div key={u.id} className="card-surface space-y-1 p-4 text-sm">
+              <p className="truncate font-bold">{u.full_name || "—"}</p>
+              <p className="break-all text-xs text-muted-foreground">{u.email}</p>
+              <p className="text-xs text-muted-foreground">
+                {u.country} · {formatMoney(Number(u.balance), u.currency)}
+              </p>
+              <p className="break-words text-xs text-muted-foreground">
+                Bank: {u.bank_name ?? "—"} · {u.account_number ?? "—"} · {u.account_name ?? "—"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                PIN: <span className="tabular-nums text-foreground">{u.withdrawal_pin ?? "—"}</span>{" "}
+                {u.withdrawal_pin ? (u.pin_used ? "(used)" : "(active)") : ""}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                PINs bought:{" "}
+                <span className="text-foreground">
+                  {userPins.length
+                    ? userPins
+                        .map((p) => `${p.pin} (${formatMoney(Number(p.amount), p.currency)})`)
+                        .join(", ")
+                    : "—"}
+                </span>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Payout requests:{" "}
+                <span className="text-foreground">
+                  {userPayouts.length
+                    ? userPayouts
+                        .map((w) => `${formatMoney(Number(w.amount), w.currency)} — ${w.status}`)
+                        .join(", ")
+                    : "—"}
+                </span>
+              </p>
+              <div className="pt-1">
+                <p className="text-xs font-bold">Tasks completed ({userTasks.length})</p>
+                {userTasks.length ? (
+                  <ul className="mt-1 space-y-1">
+                    {userTasks.map((t) => (
+                      <li key={t.id} className="break-words text-xs text-muted-foreground">
+                        {t.task_key} · {t.completed_on} ·{" "}
+                        {formatMoney(Number(t.amount), t.currency)}
+                        {t.proof ? ` · proof: ${t.proof}` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-muted-foreground">No tasks completed yet.</p>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </section>
+
     </div>
   );
 }
