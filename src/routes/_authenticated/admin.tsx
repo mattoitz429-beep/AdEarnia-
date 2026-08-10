@@ -134,6 +134,17 @@ function AdminPage() {
     },
   });
 
+  const [search, setSearch] = useState("");
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const list = users.data ?? [];
+    if (!q) return list;
+    return list.filter((u) =>
+      [u.full_name, u.email, u.bank_name, u.account_number, u.account_name, u.withdrawal_pin]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(q)),
+    );
+  }, [users.data, search]);
 
 
   const setStatus = useMutation({
