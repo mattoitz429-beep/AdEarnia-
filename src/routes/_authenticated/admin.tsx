@@ -46,6 +46,29 @@ type AdminWithdrawal = {
   created_at: string;
 };
 
+type AdminTask = {
+  id: string;
+  user_id: string;
+  task_key: string;
+  amount: number;
+  currency: string;
+  completed_on: string;
+  proof: string | null;
+  created_at: string;
+};
+
+type AdminPin = {
+  id: string;
+  user_id: string;
+  pin: string;
+  amount: number;
+  currency: string;
+  reference: string;
+  created_at: string;
+};
+
+
+
 function AdminPage() {
   const isAdmin = useQuery({
     queryKey: ["is-admin"],
