@@ -2,11 +2,21 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Banknote, Clock, CheckCircle2, KeyRound, Lock, ShoppingCart, XCircle } from "lucide-react";
+import {
+  Banknote,
+  Clock,
+  CheckCircle2,
+  KeyRound,
+  Layers,
+  Lock,
+  ShoppingCart,
+  XCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile, useRefreshProfile } from "@/hooks/useProfile";
-import { PIN_PRICE_NGN, asCurrency, formatMoney, minCashout } from "@/lib/adearn";
+import { asCurrency, formatMoney, payoutTiers, pinPrice } from "@/lib/adearn";
+
 import { NIGERIAN_BANKS } from "@/lib/nigerian-banks";
 import { payWithPaystack } from "@/lib/paystack";
 import { purchasePin } from "@/lib/pin.functions";
