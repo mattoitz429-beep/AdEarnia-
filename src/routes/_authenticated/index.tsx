@@ -113,8 +113,11 @@ function HomeTab() {
   });
 
   const complete = useMutation({
-    mutationFn: async (taskKey: string) => {
-      const { error } = await supabase.rpc("complete_task", { _task_key: taskKey });
+    mutationFn: async ({ taskKey, proof }: { taskKey: string; proof?: string }) => {
+      const { error } = await supabase.rpc("complete_task", {
+        _task_key: taskKey,
+        _proof: proof ?? null,
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -130,7 +133,7 @@ function HomeTab() {
 
   function openLink(key: string, url: string) {
     window.open(url, "_blank", "noopener,noreferrer");
-    setVisited((v) => ({ ...v, [key]: true }));
+    setVisited((v) => ({ ...v, [key]: Date.now() }));
   }
 
   function submitPuzzle(task: PuzzleTask) {
@@ -138,8 +141,9 @@ function HomeTab() {
       toast.error("That answer is not correct. Try again.");
       return;
     }
-    complete.mutate(task.key);
+    complete.mutate({ taskKey: task.key });
   }
+
 
   return (
     <div className="space-y-5">
